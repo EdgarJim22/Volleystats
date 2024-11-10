@@ -2,25 +2,29 @@
 Date: 9/11/2024
 Owner......: Edgar Enrique Jimenez Hernández
 Title......: `atletas.py`
-Function...: Maneja el registro de jugadores y equipos.
+Function...: Maneja el registro de jugadores y equipos, y persiste los datos en un archivo CSV.
 Python.....: 3.8+
 ================================================================================================"""
 
 import pandas as pd
+import os
 
-# Crear jugadores y equipos
+# Crear el DataFrame de jugadores y cargar datos si existe el archivo
 df_jugadores = pd.DataFrame(columns=["nombre", "rol", "altura", "peso", "alcance_remate", "alcance_bloqueo", "equipo"])
+archivo_jugadores = "jugadores.csv"
+
+if os.path.exists(archivo_jugadores):
+    df_jugadores = pd.read_csv(archivo_jugadores)
 
 # Función para verificar si el jugador ya existe
 def jugador_existe(nombre, rol, equipo):
-    # Verificamos si ya hay un jugador con el mismo nombre, rol y equipo
     return not df_jugadores[(df_jugadores["nombre"] == nombre) & (df_jugadores["rol"] == rol) & (df_jugadores["equipo"] == equipo)].empty
 
-# Función para crear un jugador
+# Función para crear un jugador y guardar los datos
 def crear_jugador(nombre, rol, altura, peso, alcance_remate, alcance_bloqueo, equipo):
     if jugador_existe(nombre, rol, equipo):
         return False  # Si el jugador ya existe, no lo registramos.
-    
+
     nuevo_jugador = {
         "nombre": nombre,
         "rol": rol,
@@ -30,12 +34,13 @@ def crear_jugador(nombre, rol, altura, peso, alcance_remate, alcance_bloqueo, eq
         "alcance_bloqueo": alcance_bloqueo,
         "equipo": equipo
     }
+
     global df_jugadores
     df_jugadores = pd.concat([df_jugadores, pd.DataFrame([nuevo_jugador])], ignore_index=True)
-    df_jugadores.to_csv("jugadores.csv", index=False)
-    return True  # Si el jugador se registró exitosamente.
+    df_jugadores.to_csv(archivo_jugadores, index=False)
+    return True
 
-# Función para obtener todos los jugadores
+# Función para obtener jugadores
 def obtener_jugadores(equipo=None):
     if equipo:
         return df_jugadores[df_jugadores["equipo"] == equipo].to_dict(orient="records")
