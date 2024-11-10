@@ -1,34 +1,57 @@
+"""================================================================================================
+Date: 9/11/2024
+Owner......: Edgar Enrique Jimenez Hernández
+Title......: `estadisticas.py`
+Function...: Analiza las estadísticas del jugador y proporciona recomendaciones.
+Python.....: 3.8+
+================================================================================================"""
+
 import pandas as pd
-from recomendaciones import dar_recomendaciones
+from atletas import obtener_jugador
 
-def registrar_rendimiento(nombre, saltos, velocidad, reaccion, precision):
-    """Registra el rendimiento diario de un jugador."""
-    data = {
-        "nombre": nombre,
-        "saltos": saltos,
-        "velocidad": velocidad,
-        "reaccion": reaccion,
-        "precision": precision
-    }
-    rendimiento_df = pd.DataFrame([data])
-    rendimiento_df.to_csv(f"rendimiento_{nombre}.csv", mode='a', header=False, index=False)
-    print(f"Rendimiento registrado para {nombre}.")
+# Función para calcular el IMC
+def calcular_imc(peso, altura):
+    return peso / (altura ** 2)
 
+# Función para dar recomendaciones en base al rol
+def dar_recomendaciones(jugador):
+    recomendaciones = []
+    
+    if jugador["rol"] == "Punta/Atacante lateral":
+        recomendaciones.append("Debes centrarte en la recepción y el ataque.")
+    elif jugador["rol"] == "Central":
+        recomendaciones.append("Debes mejorar tu capacidad de bloqueo y tu juego en el centro de la red.")
+    elif jugador["rol"] == "Opuesto":
+        recomendaciones.append("Tu principal objetivo debe ser el remate y el bloqueo.")
+    elif jugador["rol"] == "Colocador":
+        recomendaciones.append("Mejora tu visión de juego y tu capacidad para distribuir el balón.")
+    elif jugador["rol"] == "Libero":
+        recomendaciones.append("Debes enfocarte en la defensa y en la recepción de saques difíciles.")
+    
+    # Recomendaciones en base a la estatura
+    if jugador["altura"] <= 1.80:
+        recomendaciones.append("Debes trabajar en tu pliometría para mejorar el salto.")
+    elif jugador["altura"] > 1.80 and jugador["altura"] <= 1.90:
+        recomendaciones.append("Aprovecha tu estatura para mejorar el bloqueo y el remate.")
+    else:
+        recomendaciones.append("Con tu altura, el bloqueo y el remate deben ser tu prioridad.")
+    
+    # Recomendaciones en base al IMC
+    imc = calcular_imc(jugador["peso"], jugador["altura"])
+    if imc < 18.5:
+        recomendaciones.append("Tu IMC es bajo, debes aumentar tu peso, enfocándote en ganar músculo.")
+    elif imc >= 18.5 and imc <= 24.9:
+        recomendaciones.append("Tu IMC es ideal, sigue manteniéndote en forma con entrenamiento adecuado.")
+    else:
+        recomendaciones.append("Tu IMC es alto, considera reducir el peso para mejorar tu agilidad y resistencia.")
+    
+    return recomendaciones
+
+# Función para analizar el rendimiento de un jugador
 def analizar_rendimiento(nombre):
-    """Analiza el rendimiento promedio de un jugador y da recomendaciones."""
-    rendimiento_df = pd.read_csv(f"rendimiento_{nombre}.csv", names=["nombre", "saltos", "velocidad", "reaccion", "precision"])
-
-    # Calcular promedios
-    promedio_saltos = rendimiento_df["saltos"].mean()
-    promedio_velocidad = rendimiento_df["velocidad"].mean()
-    promedio_reaccion = rendimiento_df["reaccion"].mean()
-    promedio_precision = rendimiento_df["precision"].mean()
-
-    print(f"\nAnálisis de rendimiento para {nombre}:")
-    print(f"Saltos promedio: {promedio_saltos}")
-    print(f"Velocidad promedio: {promedio_velocidad}")
-    print(f"Reacción promedio: {promedio_reaccion}")
-    print(f"Precisión promedio: {promedio_precision}")
-
-    # Llamamos a la función de recomendaciones
-    dar_recomendaciones(nombre)
+    jugador = obtener_jugador(nombre)
+    if jugador is not None:
+        recomendaciones = dar_recomendaciones(jugador)
+        return recomendaciones
+    else:
+        return "Jugador no encontrado."
